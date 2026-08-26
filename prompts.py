@@ -1,4 +1,5 @@
 """提示词模板（DeepSeek 剧本/分镜 + FLUX 图像 + H3 运镜）"""
+import config
 
 
 def expand_script(story: str) -> str:
@@ -36,7 +37,7 @@ def write_storyboard(script_json: str) -> str:
 def character_sheet(character: dict) -> str:
     return (
         "角色三视图设定图，character sheet，同一角色的正面、侧面、背面三个全身立姿并排，"
-        "白色背景，动漫插画风格，细节清晰，人物设计一致。\n"
+        f"白色背景，{config.FLUX_STYLE}，细节清晰，人物设计一致。\n"
         f"角色：{character['name']}，{character['appearance']}"
     )
 
@@ -46,7 +47,7 @@ def scene_setting(scene: dict) -> str:
         "场景设定图，establishing shot，空镜，画面中没有任何人物。\n"
         f"地点：{scene['location']}；时间：{scene['time_of_day']}。\n"
         f"场景描述：{scene['description']}。\n"
-        "动漫插画风格，高清，电影感构图，画面精致。"
+        f"{config.FLUX_STYLE}，高清，电影感构图，画面精致。"
     )
 
 
@@ -55,7 +56,7 @@ def scene_image(shot: dict, char_descs: list[str]) -> str:
     prompt = shot["image_prompt"] + "。"
     if chars:
         prompt += f"\n出场角色外貌：{chars}。"
-    prompt += "\n动漫插画风格，高清，电影感构图，画面精致。"
+    prompt += f"\n{config.FLUX_STYLE}，高清，电影感构图，画面精致。"
     return prompt
 
 

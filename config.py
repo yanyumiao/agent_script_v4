@@ -22,6 +22,11 @@ FLUX_HEIGHT = 512
 FLUX_STEPS = 4
 FLUX_SHEET_WIDTH = 1344   # 三视图拼图宽度（三栏）
 FLUX_SHEET_HEIGHT = 768
+FLUX_STYLE_1 = "动漫插画风格"
+FLUX_STYLE_2 = "写实电影风格，cinematic"
+FLUX_STYLE_3 = "写实摄影，photorealistic"
+FLUX_STYLE_4 = "3D 渲染，皮克斯动画风格"
+FLUX_STYLE = FLUX_STYLE_1   # 切换风格：改成 FLUX_STYLE_2 / _3 / _4
 
 # ---- FLUX 一致性 / 质量控制 ----
 FLUX_SEED = None                # 随机种子（一致性靠母图 img2img + 文字外貌描述，不靠 seed）
