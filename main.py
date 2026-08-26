@@ -19,7 +19,8 @@ def main():
         raise SystemExit("错误：请提供 --story，或用 --run-dir 续跑已有目录。")
 
     if args.run_dir:
-        run_dir = Path(args.run_dir)
+        # 把命令行传入的目录参数转成绝对路径
+        run_dir = Path(args.run_dir).resolve()
     else:
         run_dir = config.OUTPUTS_DIR / time.strftime("%Y%m%d-%H%M%S")
     for sub in ("images", "shots", "voices"):
