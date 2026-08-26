@@ -1,7 +1,7 @@
 ## 剧本agent
 剧本扩充 分镜 by deepseek
 角色图 场景图 by flux
-图生视频 by mini-max-h3
+图生视频 by mini-max-h3（antirez/h3.c，BF16 未量化）
 
 ## 使用说明
 1. 填 key：`cp .env.example .env`，填入 `DEEPSEEK_API_KEY`

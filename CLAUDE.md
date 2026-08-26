@@ -17,7 +17,7 @@ story → script → storyboard → characters(三视图) → shots(场景图) �
 |---|---|---|
 | 剧本/分镜 | DeepSeek V4（`deepseek-v4-flash`） | 在线 API |
 | 文生图 | FLUX.2 Klein 4B q8（mflux） | 本地 |
-| 图生视频 | minimax-H3（antirez Metal 版） | 本地 |
+| 图生视频 | minimax-H3（antirez/h3.c，BF16 未量化） | 本地 |
 | 配音 | edge-tts（微软免费神经语音） | 在线 |
 | 合成 | ffmpeg | 本地 |
 
@@ -30,6 +30,7 @@ story → script → storyboard → characters(三视图) → shots(场景图) �
    - 必须 `cwd=~/h3-metal` 运行（否则找不到 `h3_shaders.metal`）
    - `--seed` 只接受整数，不接受 `random`（用 Python `random.randint`）
    - 角色/场景一致性用 `--ref-image`（Ref2VA），不是 `--first-frame`
+   - 当前版本 `3fafbca`（antirez/h3.c，2026-08-17，无 tag）；权重 **BF16 全精度未量化**（DiT 45×BF16+9×F32），运行未开 `--use-int8-row-fc2`。模型目录 `MiniMax-H3/` 下 FL2VA/Ref2VA 各一份（共 279G）。
 5. **edge-tts 是在线服务**，`NoAudioReceived` 瞬时失败需重试（`models/tts.py` 已做 3 次）。
 
 ## 关键决策
