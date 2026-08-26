@@ -4,7 +4,8 @@ import subprocess
 import config
 
 
-def generate_image(prompt, output_path, width=None, height=None, steps=None, seed=None):
+def generate_image(prompt, output_path, width=None, height=None, steps=None,
+                   seed=None, image=None, image_strength=None):
     width = width or config.FLUX_WIDTH
     height = height or config.FLUX_HEIGHT
     steps = steps or config.FLUX_STEPS
@@ -19,5 +20,9 @@ def generate_image(prompt, output_path, width=None, height=None, steps=None, see
     ]
     if seed is not None:
         cmd += ["--seed", str(seed)]
+    if image:
+        cmd += ["--image", str(image)]
+        if image_strength is not None:
+            cmd += [str(image_strength)]
     subprocess.run(cmd, check=True)
     return str(output_path)

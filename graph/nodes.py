@@ -48,6 +48,9 @@ def generate_character_sheets(state: dict) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     result = []
     for i, ch in enumerate(characters):
+        if ch.get("role") == "旁白":
+            result.append({**ch, "sheet_path": None})
+            continue
         path = out_dir / f"character_{i:02d}.png"
         if path.exists():
             result.append({**ch, "sheet_path": str(path)})
@@ -57,6 +60,7 @@ def generate_character_sheets(state: dict) -> dict:
             path,
             width=config.FLUX_SHEET_WIDTH,
             height=config.FLUX_SHEET_HEIGHT,
+            seed=config.FLUX_SEED,
         )
         result.append({**ch, "sheet_path": str(path)})
     _save_json(state["run_dir"], "characters.json", result)
@@ -65,8 +69,26 @@ def generate_character_sheets(state: dict) -> dict:
 
 def generate_scene_images(state: dict) -> dict:
     shots = state["storyboard"]["shots"]
-    appearance_map = {c["name"]: c["appearance"] for c in state["characters"]}
+    scenes = state["script"]["scenes"]
+    appearance_map = {c["name"]: c["appearance"] for c in state["characters"]
+                      if c.get("role") != "旁白"}
     out_dir = Path(state["run_dir"]) / "images"
+
+    # 1) 每个场景先生成一张「场景母图」（空镜），后续镜头用 img2img 锚定场景元素
+    scene_refs = {}
+    for i, scene in enumerate(scenes):
+        path = out_dir / f"scene_setting_{i:02d}.png"
+        if not path.exists():
+            generate_image(
+                prompts.scene_setting(scene),
+                path,
+                width=config.FLUX_WIDTH,
+                height=config.FLUX_HEIGHT,
+                seed=config.FLUX_SEED,
+            )
+        scene_refs[scene["name"]] = str(path)
+
+    # 2) 逐镜头生成场景图：以对应场景母图为参考做 img2img
     result = []
     for shot in shots:
         idx = shot["shot_id"]
@@ -75,11 +97,15 @@ def generate_scene_images(state: dict) -> dict:
             result.append({**shot, "scene_image": str(path)})
             continue
         char_descs = [appearance_map[n] for n in shot["characters"] if n in appearance_map]
+        ref = scene_refs.get(shot["scene_name"])
         generate_image(
             prompts.scene_image(shot, char_descs),
             path,
             width=config.FLUX_WIDTH,
             height=config.FLUX_HEIGHT,
+            seed=config.FLUX_SEED,
+            image=ref,
+            image_strength=config.FLUX_IMG2IMG_STRENGTH,
         )
         result.append({**shot, "scene_image": str(path)})
     return {"shots": result}

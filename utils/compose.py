@@ -10,24 +10,24 @@ def _probe_duration(path) -> float:
     return float(out.stdout.strip())
 
 
-def _mux_shot(video, voice, duration, out_path):
+def _mux_shot(video, voice, out_path):
+    video_dur = _probe_duration(video)
+    voice_dur = _probe_duration(voice) if voice else 0.0
+    target = max(video_dur, voice_dur)
+    pad = max(0.0, voice_dur - video_dur)
+
     if voice:
-        cmd = [
-            "ffmpeg", "-y",
-            "-i", str(video),
-            "-i", str(voice),
-            "-filter_complex", "[1:a]apad[a]",
-            "-map", "0:v", "-map", "[a]",
-        ]
+        cmd = ["ffmpeg", "-y", "-i", str(video), "-i", str(voice)]
+        v_fc = (f"[0:v]tpad=stop_mode=clone:stop_duration={pad:.3f}[v]"
+                if pad > 0 else "[0:v]null[v]")
+        cmd += ["-filter_complex", f"{v_fc};[1:a]apad[a]",
+                "-map", "[v]", "-map", "[a]"]
     else:
-        cmd = [
-            "ffmpeg", "-y",
-            "-i", str(video),
-            "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
-            "-map", "0:v", "-map", "1:a",
-        ]
+        cmd = ["ffmpeg", "-y", "-i", str(video),
+               "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
+               "-map", "0:v", "-map", "1:a"]
     cmd += [
-        "-t", str(duration),
+        "-t", f"{target:.3f}",
         "-c:v", "libx264", "-c:a", "aac",
         "-ar", "44100", "-ac", "2",
         str(out_path),
@@ -42,9 +42,8 @@ def compose_shots(shots, out_path):
     for i, shot in enumerate(shots):
         video = shot["video"]
         voice = shot.get("voice")
-        duration = _probe_duration(video)
         clip = tmp / f"clip_{i:02d}.mp4"
-        _mux_shot(video, voice, duration, clip)
+        _mux_shot(video, voice, clip)
         clips.append(clip)
 
     list_file = Path(out_path).parent / "concat.txt"

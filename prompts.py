@@ -24,9 +24,12 @@ def write_storyboard(script_json: str) -> str:
 
 要求：
 1. 拆成 4~8 个镜头，shot_id 从 1 开始连续编号。
-2. 每个镜头写：所属场景名、画面视觉描述（image_prompt，中文、具体、可直接用于文生图）、出场角色名列表、动作（action）、运镜（camera）、时长（duration，秒，建议 2~5）、本镜头台词（有则给 dialogue，无则留空）。
-3. 台词要与剧本对白对应，逐句分配到镜头。
-4. 画面描述要能体现角色外貌，便于图像生成保持角色一致。
+2. 一个镜头只描述「一个场景、一个机位、一个连续动作」：禁止把多个场景（如外景+内景）或多次切换塞进同一个镜头；需要切换场景或机位时，必须拆成新镜头。
+3. 每个镜头写：所属场景名（scene_name，必须与剧本场景名一致）、画面视觉描述（image_prompt，中文、具体、只描述本镜头画面里真实出现的内容，可直接用于文生图）、出场角色名列表（characters）、动作（action）、运镜（camera）、时长（duration，秒，建议 2~5）、本镜头台词（有则给 dialogue，无则留空）。
+4. characters 必须严格列出画面中「实际可见」的角色：空镜、远景、纯旁白镜头只标"旁白"，不标具体人物；内景角色不得出现在外景镜头里。
+5. image_prompt / camera / action / characters 必须互相一致：camera 只写一种运镜，禁止写"随后切到…"；image_prompt 不描述画面里不存在的东西。
+6. 台词要与剧本对白对应，逐句分配到镜头。
+7. 画面描述要能体现角色外貌，便于图像生成保持角色一致。
 """
 
 
@@ -35,6 +38,15 @@ def character_sheet(character: dict) -> str:
         "角色三视图设定图，character sheet，同一角色的正面、侧面、背面三个全身立姿并排，"
         "白色背景，动漫插画风格，细节清晰，人物设计一致。\n"
         f"角色：{character['name']}，{character['appearance']}"
+    )
+
+
+def scene_setting(scene: dict) -> str:
+    return (
+        "场景设定图，establishing shot，空镜，画面中没有任何人物。\n"
+        f"地点：{scene['location']}；时间：{scene['time_of_day']}。\n"
+        f"场景描述：{scene['description']}。\n"
+        "动漫插画风格，高清，电影感构图，画面精致。"
     )
 
 

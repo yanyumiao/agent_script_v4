@@ -23,6 +23,11 @@ FLUX_STEPS = 4
 FLUX_SHEET_WIDTH = 1344   # 三视图拼图宽度（三栏）
 FLUX_SHEET_HEIGHT = 768
 
+# ---- FLUX 一致性 / 质量控制 ----
+FLUX_SEED = None                # 随机种子（一致性靠母图 img2img + 文字外貌描述，不靠 seed）
+FLUX_IMG2IMG_STRENGTH = 0.5     # 场景母图 img2img 参考强度
+# 注：FLUX.2 Klein 不支持 --negative-prompt（mflux 直接报错），负向提示在此模型不可用
+
 # ---- H3 视频生成（绝对路径）----
 H3_BIN = HOME / "h3-metal/h3"
 H3_MODEL_DIR = HOME / "h3-metal/MiniMax-H3"
