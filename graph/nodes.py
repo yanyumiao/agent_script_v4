@@ -8,7 +8,7 @@ from models.deepseek import Script, Storyboard, structured_llm
 from models.flux import generate_image
 from models.h3 import generate_video
 from models.tts import generate_voice
-from utils.compose import compose_shots
+from utils.compose import compose_shots, probe_duration
 
 
 def _save_json(run_dir, filename, data) -> Path:
@@ -122,11 +122,13 @@ def generate_shots(state: dict) -> dict:
         if path.exists():
             result.append({**shot, "video": str(path)})
             continue
+        # 视频时长取「分镜预估时长」与「配音实际时长」的较大值，避免配音超时靠定格补帧
+        duration = max(shot["duration"], shot.get("voice_duration") or 0.0)
         generate_video(
             prompts.shot_motion(shot),
             path,
             ref_image=shot["scene_image"],
-            frames=int(round(shot["duration"] * config.H3_FPS)),
+            frames=int(round(duration * config.H3_FPS)),
         )
         result.append({**shot, "video": str(path)})
     return {"shots": result}
@@ -148,12 +150,11 @@ def generate_voices(state: dict) -> dict:
             continue
         idx = shot["shot_id"]
         path = out_dir / f"voice_{idx:02d}.mp3"
-        if path.exists() and path.stat().st_size > 0:
-            result.append({**shot, "voice": str(path)})
-            continue
-        voice = voice_map.get(dialogue["speaker"], config.TTS_DEFAULT_VOICE)
-        generate_voice(dialogue["text"], voice, path)
-        result.append({**shot, "voice": str(path)})
+        if not (path.exists() and path.stat().st_size > 0):
+            voice = voice_map.get(dialogue["speaker"], config.TTS_DEFAULT_VOICE)
+            generate_voice(dialogue["text"], voice, path)
+        # 记录配音实际时长，供 generate_shots 用 max(分镜时长, 配音时长) 定视频帧数
+        result.append({**shot, "voice": str(path), "voice_duration": probe_duration(path)})
     return {"shots": result}
 
 

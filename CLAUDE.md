@@ -5,8 +5,8 @@
 ## Pipeline（graph/build.py 线性 7 节点）
 
 ```
-story → script → storyboard → characters(三视图) → shots(场景图) → shots(视频) → voices(配音) → final.mp4
-        DeepSeek    DeepSeek         FLUX               FLUX           H3           edge-tts      ffmpeg
+story → script → storyboard → characters(三视图) → shots(场景图) → voices(配音) → shots(视频) → final.mp4
+        DeepSeek    DeepSeek         FLUX               FLUX           edge-tts       H3          ffmpeg
 ```
 
 节点实现见 `graph/nodes.py`，每个节点都有「产物已存在则跳过」的幂等逻辑，支持 `--run-dir` 续跑。
@@ -36,7 +36,7 @@ story → script → storyboard → characters(三视图) → shots(场景图) �
 ## 关键决策
 
 - **一致性方案**：场景母图（establishing shot，空镜）做 img2img 锚定场景元素 + 每个镜头 prompt 重复拼角色外貌文字描述。`FLUX_SEED` 用 `None`（随机）——固定 seed 只保证同 prompt 可复现，对跨镜头一致性无帮助，故不固定。彻底解决角色一致性需训练角色 LoRA（Phase 2）。
-- **音画时长对齐**：合成时 clip 时长取 `max(视频, 语音)`，语音更长时用 ffmpeg `tpad=stop_mode=clone` 定格补长。见 `utils/compose.py`。
+- **音画时长对齐**：先配音、量出实际时长，视频帧数按 `max(分镜预估时长, 配音实际时长)` 生成，从源头消除「定格补长」。`utils/compose.py` 仍保留 `tpad=stop_mode=clone` 作兜底（正常流程不会触发）。
 - **旁白无实体**：`generate_character_sheets` 跳过 `role=="旁白"`（不生成三视图），`appearance_map` 排除旁白（不拼进场景图 prompt）。
 
 ## Python 环境

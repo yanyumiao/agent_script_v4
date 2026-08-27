@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 
-def _probe_duration(path) -> float:
+def probe_duration(path) -> float:
     cmd = ["ffprobe", "-v", "error", "-show_entries", "format=duration",
            "-of", "default=noprint_wrappers=1:nokey=1", str(path)]
     out = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -11,8 +11,8 @@ def _probe_duration(path) -> float:
 
 
 def _mux_shot(video, voice, out_path):
-    video_dur = _probe_duration(video)
-    voice_dur = _probe_duration(voice) if voice else 0.0
+    video_dur = probe_duration(video)
+    voice_dur = probe_duration(voice) if voice else 0.0
     target = max(video_dur, voice_dur)
     pad = max(0.0, voice_dur - video_dur)
 
