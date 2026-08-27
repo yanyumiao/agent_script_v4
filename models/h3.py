@@ -24,6 +24,10 @@ def generate_video(prompt, output_path, ref_image=None, frames=None,
         "--steps", str(steps),
         "--seed", str(seed),
     ]
+    if config.H3_RENDER_WIDTH:
+        cmd += ["--render-width", str(config.H3_RENDER_WIDTH)]
+    if config.H3_RENDER_HEIGHT:
+        cmd += ["--render-height", str(config.H3_RENDER_HEIGHT)]
     if ref_image:
         cmd += ["--ref-image", str(ref_image)]
     # h3 需要在其安装目录下运行，才能找到 h3_shaders.metal

@@ -42,13 +42,24 @@ H3_WIDTH = 512
 H3_HEIGHT = 512
 H3_STEPS = 20
 H3_FPS = 24
+H3_RENDER_WIDTH = None    # 内部渲染分辨率，None=模型原生；--fast 时降为 256
+H3_RENDER_HEIGHT = None
 
-# ---- TTS 音色池（按出场角色顺序分配）----
-TTS_DEFAULT_VOICE = "zh-CN-XiaoxiaoNeural"
+# ---- H3 快速模式（--fast 快速看原型）----
+H3_FAST_STEPS = 8
+H3_FAST_WIDTH = 256
+H3_FAST_HEIGHT = 256
+H3_FAST_RENDER_WIDTH = 256
+H3_FAST_RENDER_HEIGHT = 256
+
+# ---- TTS 音色池（本地 Qwen3-TTS CustomVoice，MLX）----
+TTS_MODEL = str(HOME / "qwen3-tts")   # 预下载到 ~/qwen3-tts 的本地路径
+TTS_LANGUAGE = "chinese"
+TTS_DEFAULT_VOICE = "vivian"
 TTS_VOICES = [
-    "zh-CN-XiaoxiaoNeural",  # 女 晓晓
-    "zh-CN-YunxiNeural",     # 男 云希
-    "zh-CN-XiaoyiNeural",    # 女 晓伊
-    "zh-CN-YunjianNeural",   # 男 云健
-    "zh-CN-YunyangNeural",   # 男 云扬（旁白）
+    "vivian",     # 女 标准普通话 明亮
+    "serena",     # 女 标准普通话 温柔
+    "dylan",      # 男 京腔（方言）
+    "eric",       # 男 川腔（方言）
+    "uncle_fu",   # 男 标准普通话 权威（旁白，靠 TTS_VOICES[-1] 取到）
 ]

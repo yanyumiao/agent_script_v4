@@ -1,23 +1,27 @@
-"""edge-tts 配音客户端"""
-import asyncio
-import time
+"""本地 Qwen3-TTS 配音客户端（MLX）"""
+import numpy as np
+import soundfile as sf
 
-import edge_tts
+import config
+from mlx_audio.tts.utils import load_model
 
-
-async def _synth(text, voice, output_path):
-    communicate = edge_tts.Communicate(text, voice)
-    await communicate.save(str(output_path))
+_model = None
 
 
-def generate_voice(text, voice, output_path, retries=3):
-    last_err = None
-    for attempt in range(retries):
-        try:
-            asyncio.run(_synth(text, voice, output_path))
-            return str(output_path)
-        except edge_tts.exceptions.NoAudioReceived as err:
-            # NoAudioReceived 多为微软端点瞬时抖动，重试通常可恢复
-            last_err = err
-            time.sleep(1.5 * (attempt + 1))
-    raise last_err
+def _get_model():
+    global _model
+    if _model is None:
+        _model = load_model(config.TTS_MODEL)
+    return _model
+
+
+def generate_voice(text, voice, output_path):
+    model = _get_model()
+    results = list(model.generate_custom_voice(
+        text=text,
+        speaker=voice,
+        language=config.TTS_LANGUAGE,
+    ))
+    audio = np.concatenate([np.array(r.audio, copy=False) for r in results])
+    sf.write(str(output_path), audio.astype(np.float32), results[0].sample_rate)
+    return str(output_path)

@@ -149,7 +149,7 @@ def generate_voices(state: dict) -> dict:
             result.append(shot)
             continue
         idx = shot["shot_id"]
-        path = out_dir / f"voice_{idx:02d}.mp3"
+        path = out_dir / f"voice_{idx:02d}.wav"
         if not (path.exists() and path.stat().st_size > 0):
             voice = voice_map.get(dialogue["speaker"], config.TTS_DEFAULT_VOICE)
             generate_voice(dialogue["text"], voice, path)

@@ -6,7 +6,7 @@
 
 ```
 story → script → storyboard → characters(三视图) → shots(场景图) → voices(配音) → shots(视频) → final.mp4
-        DeepSeek    DeepSeek         FLUX               FLUX           edge-tts       H3          ffmpeg
+        DeepSeek    DeepSeek         FLUX               FLUX           Qwen3-TTS      H3          ffmpeg
 ```
 
 节点实现见 `graph/nodes.py`，每个节点都有「产物已存在则跳过」的幂等逻辑，支持 `--run-dir` 续跑。
@@ -18,7 +18,7 @@ story → script → storyboard → characters(三视图) → shots(场景图) �
 | 剧本/分镜 | DeepSeek V4（`deepseek-v4-flash`） | 在线 API |
 | 文生图 | FLUX.2 Klein 4B q8（mflux） | 本地 |
 | 图生视频 | minimax-H3（antirez/h3.c，BF16 未量化） | 本地 |
-| 配音 | edge-tts（微软免费神经语音） | 在线 |
+| 配音 | Qwen3-TTS（本地 MLX，CustomVoice 1.7B bf16） | 本地 |
 | 合成 | ffmpeg | 本地 |
 
 ## 关键坑（避免重踩）
@@ -31,7 +31,7 @@ story → script → storyboard → characters(三视图) → shots(场景图) �
    - `--seed` 只接受整数，不接受 `random`（用 Python `random.randint`）
    - 角色/场景一致性用 `--ref-image`（Ref2VA），不是 `--first-frame`
    - 当前版本 `3fafbca`（antirez/h3.c，2026-08-17，无 tag）；权重 **BF16 全精度未量化**（DiT 45×BF16+9×F32），运行未开 `--use-int8-row-fc2`。模型目录 `MiniMax-H3/` 下 FL2VA/Ref2VA 各一份（共 279G）。
-5. **edge-tts 是在线服务**，`NoAudioReceived` 瞬时失败需重试（`models/tts.py` 已做 3 次）。
+5. **Qwen3-TTS CustomVoice 只有 3 个标准普通话音色**（`vivian`女 / `serena`女 / `uncle_fu`男），`eric`=川腔、`dylan`=京腔是方言音色；多角色会自动配错性别/方言。多角色需切 **Base 音色克隆**模式（`generate(text, ref_audio=…)`，每角色一段参考音）。模型预下载到 `~/qwen3-tts/`，`TTS_MODEL` 指本地路径，`load_model` 懒加载单例。
 
 ## 关键决策
 
@@ -41,7 +41,7 @@ story → script → storyboard → characters(三视图) → shots(场景图) �
 
 ## Python 环境
 
-- agent 依赖（langgraph / langchain-deepseek / edge-tts / dotenv / pydantic）装在 **conda base**（`/opt/miniconda3/bin/python`）。
+- agent 依赖（langgraph / langchain-deepseek / mlx-audio / soundfile / dotenv / pydantic）装在 **conda base**（`/opt/miniconda3/bin/python`）。
 - mflux 装在独立 venv `~/flux-klein/.venv`（只装 mflux）。
 - 曾因 `.zshrc` 把 flux venv 放 PATH 最前，导致 `python` 指向 flux venv、跑 agent 缺 dotenv；已改为放 PATH **末尾**。跑 agent 用 `python`（conda base）或完整路径。
 
