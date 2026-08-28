@@ -30,6 +30,7 @@ story → script → storyboard → characters(三视图) → shots(场景图) �
    - 必须 `cwd=~/h3-metal` 运行（否则找不到 `h3_shaders.metal`）
    - `--seed` 只接受整数，不接受 `random`（用 Python `random.randint`）
    - 角色/场景一致性用 `--ref-image`（Ref2VA），不是 `--first-frame`
+   - **帧数上限 362**：合法帧数 = 5+17k（k≤21，h3.c 直接报错）；配音时长×24fps 可能超限，`models/h3.py` 已钳制 `min(frames, H3_MAX_FRAMES)`，被钳短的视频由 compose `tpad=stop_mode=clone` 补尾帧对齐
    - 当前版本 `3fafbca`（antirez/h3.c，2026-08-17，无 tag）；权重 **BF16 全精度未量化**（DiT 45×BF16+9×F32），运行未开 `--use-int8-row-fc2`。模型目录 `MiniMax-H3/` 下 FL2VA/Ref2VA 各一份（共 279G）。
 5. **Qwen3-TTS CustomVoice 只有 3 个标准普通话音色**（`vivian`女 / `serena`女 / `uncle_fu`男），`eric`=川腔、`dylan`=京腔是方言音色；多角色会自动配错性别/方言。多角色需切 **Base 音色克隆**模式（`generate(text, ref_audio=…)`，每角色一段参考音）。模型预下载到 `~/qwen3-tts/`，`TTS_MODEL` 指本地路径，`load_model` 懒加载单例。
 

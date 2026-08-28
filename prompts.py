@@ -31,6 +31,11 @@ def write_storyboard(script_json: str) -> str:
 5. image_prompt / camera / action / characters 必须互相一致：camera 只写一种运镜，禁止写"随后切到…"；image_prompt 不描述画面里不存在的东西。
 6. 台词要与剧本对白对应，逐句分配到镜头。
 7. 画面描述要能体现角色外貌，便于图像生成保持角色一致。
+8. 台词长度硬约束（配音时长由台词字数决定，H3 单镜头视频上限约 15 秒）：
+   - 单句台词 ≤ {config.STORYBOARD_MAX_LINE_CHARS} 字；一句话超长必须按标点拆成多句
+   - 旁白单镜 ≤ {config.STORYBOARD_MAX_NARRATION_CHARS} 字
+   - 每镜头台词（含旁白）≤ {config.STORYBOARD_MAX_SHOT_DIALOGUE_CHARS} 字；装不下的必须拆成新镜头，禁止长台词硬塞进一个镜头
+   - duration 要与台词长度匹配：按台词约 4~5 字/秒估算，别写 5 秒却塞 30 字台词
 """
 
 

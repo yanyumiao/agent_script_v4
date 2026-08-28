@@ -8,6 +8,9 @@ import config
 def generate_video(prompt, output_path, ref_image=None, frames=None,
                    width=None, height=None, steps=None, seed=None):
     frames = frames if frames is not None else config.H3_FPS * 3
+    # 超过 362 帧 H3 直接报错（合法帧数 5+17k，k≤21），钳到上限；
+    # 若被钳短导致视频短于配音，compose 会用 tpad=stop_mode=clone 补尾帧
+    frames = min(frames, config.H3_MAX_FRAMES)
     width = width or config.H3_WIDTH
     height = height or config.H3_HEIGHT
     steps = steps or config.H3_STEPS

@@ -12,7 +12,7 @@ HOME = Path.home()
 
 # ---- DeepSeek（LLM）----
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
-DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-flash")
+DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-v4-pro")
 
 # ---- FLUX 文生图（绝对路径，不依赖 PATH）----
 FLUX_BIN = HOME / "flux-klein/.venv/bin/mflux-generate-flux2"
@@ -42,6 +42,8 @@ H3_WIDTH = 512
 H3_HEIGHT = 512
 H3_STEPS = 20
 H3_FPS = 24
+# released 模型帧数上限：合法帧数 = 5 + 17k（k=0..21），超过 362 直接报错
+H3_MAX_FRAMES = 362
 H3_RENDER_WIDTH = None    # 内部渲染分辨率，None=模型原生；--fast 时降为 256
 H3_RENDER_HEIGHT = None
 
@@ -51,6 +53,11 @@ H3_FAST_WIDTH = 256
 H3_FAST_HEIGHT = 256
 H3_FAST_RENDER_WIDTH = 256
 H3_FAST_RENDER_HEIGHT = 256
+
+# ---- 分镜台词时长预算（配音时长由字数决定，H3 单镜头视频上限 ~15s）----
+STORYBOARD_MAX_LINE_CHARS = 18       # 单句台词字数上限（约 4s @5字/s）
+STORYBOARD_MAX_NARRATION_CHARS = 40  # 旁白单镜字数上限（约 13s @3字/s）
+STORYBOARD_MAX_SHOT_DIALOGUE_CHARS = 50  # 每镜头台词总字数上限，超限必须拆镜
 
 # ---- TTS 音色池（本地 Qwen3-TTS CustomVoice，MLX）----
 TTS_MODEL = str(HOME / "qwen3-tts")   # 预下载到 ~/qwen3-tts 的本地路径
